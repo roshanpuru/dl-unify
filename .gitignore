@@ -1,0 +1,11 @@
+backup
+build
+node_modules
+ruffle-config.json
+.vscode
+
+/backup
+/build
+/node_modules
+/ruffle-config.json
+/.vscode
