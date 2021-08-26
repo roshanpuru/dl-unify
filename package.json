@@ -12,11 +12,13 @@
   "author": "Puru Chaudhary @DLTLabs",
   "license": "ISC",
   "dependencies": {
+    "ethereumjs-tx": "^2.1.2",
     "fs": "0.0.1-security",
     "md5-file": "^5.0.0",
     "minimist": "^1.2.5",
     "path": "^0.12.7",
     "solc": "^0.8.7-fixed",
+    "web3": "^1.5.2",
     "yargs": "^17.1.1"
   }
 }

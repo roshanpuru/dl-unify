@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 var Init = require('../ruffle/init/Init')
 var Compile = require('../ruffle/compile/Compile')
+var Deploy = require('../ruffle/deploy/Deploy')
+
 const yargs = require('yargs');
 
 
@@ -71,7 +73,9 @@ const yargs = require('yargs');
     function (argv) {
         if(argv.network !== undefined && argv.network !== true){
             console.log('Deploying the contract to the <dltestnet> network. : ' + argv.network);
-        }else{
+            var deploy = new Deploy('VotingCore.json');
+            deploy.deploy();
+          }else{
             yargs.showHelp()
         }
     }
