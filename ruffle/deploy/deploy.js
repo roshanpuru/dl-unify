@@ -3,7 +3,7 @@ const fs = require('fs');
 const solc = require('solc');
 const md5File = require('md5-file');
 const Web3 = require('web3');
-const Tx = require('ethereumjs-tx').Transaction;
+const Tx = require('ethereumjs-tx');
 // const SolidityFunction = require('web3/lib/web3/function');
 
 var Deploy = function (contract){
@@ -18,7 +18,7 @@ Deploy.prototype.deploy = function() {
 let accounts = [
     {
         // Ganache Default Accounts, do not use it for your production
-        // Develop 1
+        // Develop 0
         address: '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16',
         key: 'C7E6DF99DBFC0EBA13948A0707C1A767BAD31EE42BB9E9441AB0A939ACAC456B'
     },
@@ -54,11 +54,11 @@ web3 = new Web3(new Web3.providers.HttpProvider(selectedHost,
 ));
 
 let gasPrice = web3.eth.gasPrice;
-let gasPriceHex = web3.utils.toHex(gasPrice);
+let gasPriceHex = web3.utils.toHex(0);
 let gasLimitHex = web3.utils.toHex(6000000);
 let block = web3.eth.getBlock("latest");
-let nonce =  web3.eth.getTransactionCount(accounts[selectedAccountIndex].address, "pending");
-let nonceHex = web3.utils.toHex(nonce);
+let nonce =  web3.eth.getTransactionCount(accounts[selectedAccountIndex].address);
+let nonceHex = web3.utils.toHex(45);
 
 function deployContract(contract) {
 
@@ -87,16 +87,16 @@ function deployContract(contract) {
     // Retrieve the byte code
     let bytecode = jsonOutput['contracts'][contract.split('/').pop().split('.')[0] + '.sol'][path.parse(contract).name]['evm']['bytecode']['object'];
     
-    let tokenContract = new web3.eth.Contract(abi);
+    console.dir(JSON.stringify(abi), null, 2 )
+    let tokenContract = new web3.eth.Contract(JSON.parse(JSON.stringify(abi)));
     let contractData = null;
-
     // Prepare the smart contract deployment payload
     // If the smart contract constructor has mandatory parameters, you supply the input parameters like below 
     //
     // contractData = tokenContract.new.getData( param1, param2, ..., {
     //    data: '0x' + bytecode
     // });    
-    // contractData = tokenContract.new.getData({
+    // contractData = tokenContract.new.getData('0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', {
     //     data: '0x' + bytecode
     // });    
 
@@ -105,10 +105,12 @@ function deployContract(contract) {
         nonce: nonceHex,
         gasPrice: gasPriceHex,
         gasLimit: gasLimitHex,
-        data: tokenContract,
+        data: contractData,
         from: accounts[selectedAccountIndex].address,
-        chainId: '2012018'
+        chainId: 2012018
     };
+
+    console.log('nonce  ' + nonceHex);
 
     // Get the account private key, need to use it to sign the transaction later.
     let privateKey = new Buffer(accounts[selectedAccountIndex].key, 'hex')
@@ -120,8 +122,21 @@ function deployContract(contract) {
     let serializedTx = tx.serialize();
 
     let receipt = null;
-
-    // Submit the smart contract deployment transaction
+    console.dir('tx::' + JSON.stringify("0x" + serializedTx.toString('hex')))
+    debugger;
+    // tokenContract.deploy({
+    //     data: '0x' + bytecode,
+    //     // You can omit the asciiToHex calls, as the contstructor takes strings. 
+    //     // Web3 will do the conversion for you.
+    //     arguments: ['0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16'] 
+    // }).send({
+    //     from: accounts[selectedAccountIndex].address,
+    //     gasPrice: gasPriceHex,
+    //     gas: gasLimitHex
+    // }).on('confirmation', () => {}).then((newContractInstance) => {
+    //     console.log('Deployed Contract Address : ', newContractInstance.options.address);
+    // })
+    //Submit the smart contract deployment transaction
     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), (err, hash) => {
         if (err) { 
             console.log(err); return; 
@@ -139,7 +154,7 @@ function deployContract(contract) {
             Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
         }
 
-        console.log('Contract address: ' + receipt.contractAddress);
+        console.log('Contract address: ' + JSON.stringify(receipt));
         console.log('Contract File: ' + contract);
 
         // Update JSON
