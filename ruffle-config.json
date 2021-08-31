@@ -1,0 +1,7 @@
+{
+    "config": {
+      "network": {
+          "url": "https://google.com"
+      }
+    }
+}

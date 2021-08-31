@@ -17,6 +17,10 @@ Deploy.prototype.deploy = function() {
 
 let accounts = [
     {
+        address: '0x3ec180429a49f45adf252D22c9c5316e13b3c0b0',
+        key: 'e261f8948b52c1af1acf250a477741f284e20d018298d70ad23f54ca6f73a0d0'
+    },
+    {
         // Ganache Default Accounts, do not use it for your production
         // Develop 0
         address: '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16',
@@ -41,26 +45,43 @@ let accounts = [
 ];
 
 // Ganache or Private Ethereum Blockchain
-let selectedHost = 'https://dltestnet.dltlabs.com/api/2.0/';
+//let selectedHost = 'https://dltestnet.dltlabs.com/api/2.0/';
+  let selectedHost = 'http://127.0.0.1:7545';
 
-let selectedAccountIndex = 0; // Using the first account in the list
+let selectedAccountIndex = 1; // Using the first account in the list
 
 web3 = new Web3(new Web3.providers.HttpProvider(selectedHost,         
     {
+    timeout: 300000,
     headers: [{ 
         name: 'Authorization',
         value: '979f3677-d471-465f-a34f-fb35fdd36c36' }]
     }
 ));
-
-let gasPrice = web3.eth.gasPrice;
+let nonceHex;
 let gasPriceHex = web3.utils.toHex(0);
 let gasLimitHex = web3.utils.toHex(6000000);
-let block = web3.eth.getBlock("latest");
-let nonce =  web3.eth.getTransactionCount(accounts[selectedAccountIndex].address);
-let nonceHex = web3.utils.toHex(45);
+// let block = web3.eth.getBlock("latest");
 
-function deployContract(contract) {
+// implement using await/Sync
+let nonce = web3.eth.getTransactionCount(accounts[selectedAccountIndex].address);
+
+
+async function send(transaction) {
+    // let gas = await transaction.estimateGas({from: accounts[selectedAccountIndex].address});
+    let options = {
+        from  : accounts[selectedAccountIndex].address,
+        data: transaction.encodeABI(),
+        gasPrice: gasPriceHex,
+        gas: gasLimitHex
+    };
+    let signedTransaction = await web3.eth.accounts.signTransaction(options, accounts[selectedAccountIndex].key);
+    debugger;
+    console.log('Failing -----> ' + signedTransaction);
+    return await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
+}
+
+async function deployContract(contract) {
 
     // It will read the ABI & byte code contents from the JSON file in ./build/contracts/ folder
     let jsonOutputName = path.parse(contract).name + '.json';
@@ -100,82 +121,82 @@ function deployContract(contract) {
     //     data: '0x' + bytecode
     // });    
 
-    // Prepare the raw transaction information
-    let rawTx = {
-        nonce: nonceHex,
-        gasPrice: gasPriceHex,
-        gasLimit: gasLimitHex,
-        data: contractData,
-        from: accounts[selectedAccountIndex].address,
-        chainId: 2012018
-    };
-
-    console.log('nonce  ' + nonceHex);
-
-    // Get the account private key, need to use it to sign the transaction later.
-    let privateKey = new Buffer(accounts[selectedAccountIndex].key, 'hex')
-
-    let tx = new Tx(rawTx);
-
-    // Sign the transaction 
-    tx.sign(privateKey);
-    let serializedTx = tx.serialize();
-
-    let receipt = null;
-    console.dir('tx::' + JSON.stringify("0x" + serializedTx.toString('hex')))
     debugger;
-    // tokenContract.deploy({
-    //     data: '0x' + bytecode,
-    //     // You can omit the asciiToHex calls, as the contstructor takes strings. 
-    //     // Web3 will do the conversion for you.
-    //     arguments: ['0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16'] 
-    // }).send({
-    //     from: accounts[selectedAccountIndex].address,
-    //     gasPrice: gasPriceHex,
-    //     gas: gasLimitHex
-    // }).on('confirmation', () => {}).then((newContractInstance) => {
-    //     console.log('Deployed Contract Address : ', newContractInstance.options.address);
-    // })
-    //Submit the smart contract deployment transaction
-    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), (err, hash) => {
-        if (err) { 
-            console.log(err); return; 
-        }
-    
-        // Log the tx, you can explore status manually with eth.getTransaction()
-        console.log('Contract creation tx: ' + hash);
-    
-        // Wait for the transaction to be mined
-        while (receipt == null) {
-
-            receipt = web3.eth.getTransactionReceipt(hash);
-
-            // Simulate the sleep function
-            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
-        }
-
-        console.log('Contract address: ' + JSON.stringify(receipt));
-        console.log('Contract File: ' + contract);
-
-        // Update JSON
-        jsonOutput['contracts'][contract]['contractAddress'] = receipt.contractAddress;
-
-        // Web frontend just need to have abi & contract address information
-        let webJsonOutput = {
-            'abi': abi,
-            'contractAddress': receipt.contractAddress
+    nonce.then(val => {
+        nonceHex = web3.utils.toHex(val);
+            // Prepare the raw transaction information
+        let rawTx = {
+            nonce: nonceHex,
+            gasPrice: gasPriceHex,
+            gasLimit: gasLimitHex,
+            data: '0x' + bytecode,
+            from: accounts[selectedAccountIndex].address,
+            chainId: 2012018
         };
 
-        let formattedJson = JSON.stringify(jsonOutput, null, 4);
-        let formattedWebJson = JSON.stringify(webJsonOutput);
+        console.log('nonce  ' + nonceHex);
 
-        //console.log(formattedJson);
-        fs.writeFileSync(jsonFile, formattedJson);
-        fs.writeFileSync(webJsonFile, formattedWebJson);
+        // Get the account private key, need to use it to sign the transaction later.
+        let privateKey = new Buffer(accounts[selectedAccountIndex].key, 'hex')
 
-        console.log('==============================');
-    
+        let tx = new Tx(rawTx);
+
+        // Sign the transaction 
+        tx.sign(privateKey);
+        let serializedTx = tx.serialize();
+
+        let receipt = null;
+        debugger;
+       let handle = send( tokenContract.deploy({
+            data: '0x' + bytecode,
+            // You can omit the asciiToHex calls, as the contstructor takes strings. 
+            // Web3 will do the conversion for you.
+            arguments: ['0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', '0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16'] 
+        }));
+        console.log(`${contractName} contract deployed at address ${handle.contractAddress}`);
+
+        //Submit the smart contract deployment transaction
+        // web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), (err, hash) => {
+        //     if (err) { 
+        //         console.log(err); return; 
+        //     }
+        
+        //     // Log the tx, you can explore status manually with eth.getTransaction()
+        //     console.log('Contract creation tx: ' + hash);
+        
+        //     // Wait for the transaction to be mined
+        //     while (receipt == null) {
+
+        //         receipt = web3.eth.getTransactionReceipt(hash);
+
+        //         // Simulate the sleep function
+        //         Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
+        //     }
+
+        //     console.log('Contract address: ' + JSON.stringify(receipt));
+        //     console.log('Contract File: ' + contract);
+
+        //     // Update JSON
+        //     jsonOutput['contracts'][contract]['contractAddress'] = receipt.contractAddress;
+
+        //     // Web frontend just need to have abi & contract address information
+        //     let webJsonOutput = {
+        //         'abi': abi,
+        //         'contractAddress': receipt.contractAddress
+        //     };
+
+        //     let formattedJson = JSON.stringify(jsonOutput, null, 4);
+        //     let formattedWebJson = JSON.stringify(webJsonOutput);
+
+        //     //console.log(formattedJson);
+        //     fs.writeFileSync(jsonFile, formattedJson);
+        //     fs.writeFileSync(webJsonFile, formattedWebJson);
+
+        //     console.log('==============================');
+        
+        // });
     });
+
     
     return true;
 }

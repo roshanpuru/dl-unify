@@ -120,7 +120,7 @@ function buildContract(contract) {
     
     let solcInputString = JSON.stringify(solcInput);
     let output = solc.compile(solcInputString, { import: findImports });
-
+debugger;
     let jsonOutput = JSON.parse(output);
     let isError = false;
 
