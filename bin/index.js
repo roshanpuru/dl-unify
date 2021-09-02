@@ -47,7 +47,7 @@ const yargs = require('yargs');
     function (argv) {
         if(argv.file !== undefined && argv.file !== true){
             console.log('Compiling the contract : ' + argv.file);
-            var compile = new Compile('VotingCore.sol'); 
+            var compile = new Compile('HelloWorld.sol'); 
             compile.createBuildDirectory()
             compile.compile();
         }else{
