@@ -5,9 +5,12 @@ var Deploy = require('../ruffle/deploy/Deploy')
 
 const yargs = require('yargs');
 
+/**
+ * This js script takes the commands and options from the CLI and executes the same.
+ */
 
 // unify ruffle init - Creates and Initialize the project.
-  yargs
+yargs
   .usage('unify ruffle init --name <project_name>')
   .command(
     'ruffle init',
@@ -19,65 +22,72 @@ const yargs = require('yargs');
       })
     },
     function (argv) {
-        if(argv.name !== undefined && argv.name !== true){
-            var init = new Init(argv.name);
-            init.initialize();
-            init.copyConfigs();
-            console.log('Creating and Initializing project : ' + argv.name);
-        }else{
-            yargs.showHelp()
-        }
+      if (argv.name !== undefined && argv.name !== true) {
+        var init = new Init(argv.name);
+        init.initialize();
+        init.copyConfigs();
+        console.dir('Creating and Initializing project : ' + argv.name);
+        return;
+      } else {
+        yargs.showHelp()
+      }
     }
   )
   .help()
   .argv
 
 // unify ruffle compile - Compiles the contract/s in the project
-  yargs
+yargs
   .usage('unify ruffle compile --file <contract_file_name>')
   .command(
     'ruffle compile',
     'Compiles the contract/s in the project.',
     function (yargs) {
-        return yargs.option('f', {
-            alias: 'file',
-            describe: 'Compiles the contract/s in the project with contract file name passed as an option'
-          })
+      return yargs.option('f', {
+        alias: 'file',
+        describe: 'Compiles the contract/s in the project with contract file name passed as an option'
+      })
     },
     function (argv) {
-        if(argv.file !== undefined && argv.file !== true){
-            console.log('Compiling the contract : ' + argv.file);
-            var compile = new Compile('HelloWorld.sol'); 
-            compile.createBuildDirectory()
-            compile.compile();
-        }else{
-            yargs.showHelp()
-        }
+      if (argv.file !== undefined && argv.file !== true) {
+        console.dir('Compiling the contract : ' + argv.file);
+        var compile = new Compile(argv.file);
+        compile.createBuildDirectory()
+        compile.compile();
+        return;
+      } else {
+        yargs.showHelp()
+      }
     }
   )
   .help()
   .argv
 
-  // unify ruffle deploy - Deploy the contract in a DL TEST network
-  yargs
-  .usage('unify ruffle deploy --network <dltestnet>')
+// unify ruffle deploy - Deploy the contract in a DL TEST network
+yargs
+  .usage('unify ruffle deploy --network <dltestnet> [Use without <> brackets.]')
   .command(
     'ruffle deploy',
     'Deploys the contract to the <dltestnet> network.',
     function (yargs) {
-        return yargs.option('nw', {
-            alias: 'network',
-            describe: 'Deploys the contract to the <dltestnet> network.'
-          })
+      return yargs.option('c', {
+        alias: 'contract',
+        describe: 'Deploys the contract to the <dltestnet> network. Contract'
+      })
     },
     function (argv) {
-        if(argv.network !== undefined && argv.network !== true){
-            console.log('Deploying the contract to the <dltestnet> network. : ' + argv.network);
-            var deploy = new Deploy('VotingCore.json');
-            deploy.deploy();
-          }else{
-            yargs.showHelp()
-        }
+      if (argv.contract !== undefined && argv.contract !== true) {
+        // if(argv.network !== 'dltestnet'){
+        //   console.dir('This CLI currently support dltestnet DLTLabs network');
+        //   return;
+        // }
+        console.dir('Deploying the contract to the <dltestnet> network. : Contract Name :' + argv.c);
+        var deploy = new Deploy(argv.contract);
+        deploy.deploy();
+        return;
+      } else {
+        yargs.showHelp()
+      }
     }
   )
   .help()
