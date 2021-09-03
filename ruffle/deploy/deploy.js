@@ -105,7 +105,7 @@ async function deployContract(contract) {
     // contractData = tokenContract.new.getData( param1, param2, ..., {
     //    data: '0x' + bytecode
     // });    
-    contractData = tokenContract.new.getData('0x71b9cd1d50dAFAa95288BA03F2d57Ea813354f16', {
+    contractData = tokenContract.new.getData('AJAY TESTING', {
         data: '0x' + bytecode
     });
 
@@ -145,6 +145,18 @@ async function deployContract(contract) {
             await send(serializedTx);
         })();
 
+debugger;
+        // get Transaction
+        let tokenContract2 = new web3_new.eth.Contract(JSON.parse(JSON.stringify(abi)), '0xbf786d52d24f4460e10bd60b952686be783b5c03');
+
+        tokenContract2.methods.message().call(function(err, res){
+            if (err) {
+                console.log("An error occured", err)
+                return
+              }
+              console.log("The balance is: ", res)
+        });
+debugger;
         //Submit the smart contract deployment transaction
         // await web3_new.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), (err, hash) => {
         //     if (err) { 
