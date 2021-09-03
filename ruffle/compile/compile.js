@@ -1,60 +1,53 @@
+/***
+ * JS script to compile the solidity contract present in the directory <contract>
+ */
 const path = require('path');
 const fs = require('fs');
 const solc = require('solc');
 const md5File = require('md5-file');
+console.log(process.cwd());
+const solcInput = require(process.cwd() + '/ruffle-config.json')
+// Input parameters for solc
+// Refer to https://solidity.readthedocs.io/en/develop/using-the-compiler.html#compiler-input-and-output-json-description
 
-var Compile = function (file){
+
+/**
+ * COnstructor
+ * @param {string} file 
+ */
+var Compile = function (file) {
     this.file = file
 }
-
-Compile.prototype.createBuildDirectory = function() {
-    fs.mkdirSync('build/contract', { recursive: true }, function(err) {
+/**
+ * Creates build directories for the compiled contract.
+ */
+Compile.prototype.createBuildDirectory = function () {
+    fs.mkdirSync('build/contract', { recursive: true }, function (err) {
         if (err) {
-          console.log(err);
+            console.log(err);
         } else {
-          console.log('build directory created successfully ..... '  );
+            console.dir('build directory created successfully ..... ');
         }
     })
 }
 
-Compile.prototype.compile = function() {
+/***
+ * Compiles the contract
+ */
+Compile.prototype.compile = function () {
     let result = buildContract(this.file)
     return result;
 }
 
-// Input parameters for solc
-// Refer to https://solidity.readthedocs.io/en/develop/using-the-compiler.html#compiler-input-and-output-json-description
-var solcInput = {
-    language: "Solidity",
-    sources: { },
-    settings: {
-        optimizer: {
-            enabled: true
-        },
-        evmVersion: "byzantium",
-        outputSelection: {
-            "*": {
-              "": [
-                "legacyAST",
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode.object",
-                "evm.bytecode.sourceMap",
-                "evm.deployedBytecode.object",
-                "evm.deployedBytecode.sourceMap",
-                "evm.gasEstimates"
-              ]
-            },
-        }
-    }
-};
+console.dir('solc settings : ' + JSON.stringify(solcInput));
 
-// Try to lookup imported sol files in "contracts" folder or "node_modules" folder
+/**
+ * Try to lookup imported sol files in "contracts" folder or "node_modules" folder
+ * @param {string} importFile 
+ * @returns file imports
+ */
 function findImports(importFile) {
     console.log("Import File:" + importFile);
-    
     try {
         // Find in contracts folder first
         result = fs.readFileSync("contract/" + importFile, 'utf8');
@@ -67,18 +60,21 @@ function findImports(importFile) {
         } catch (error) {
             console.log(error.message);
             return { error: 'File not found' };
-        }    
+        }
     }
-
 }
 
-// Compile the sol file in "contracts" folder and output the built json file to "build/contracts"
+/**
+ * Compile the sol file in "contracts" folder and output the built json file to "build/contracts"
+ * @param {string} contract 
+ * @returns 
+ */
 function buildContract(contract) {
     let contractFile = 'contract/' + contract;
     let jsonOutputName = path.parse(contract).name + '.json';
     let jsonOutputFile = './build/contracts/' + jsonOutputName;
     let result = false;
-    
+
     try {
         result = fs.statSync(contractFile);
     } catch (error) {
@@ -90,7 +86,7 @@ function buildContract(contract) {
 
     try {
         fs.statSync(jsonOutputFile);
-        
+
         let jsonContent = fs.readFileSync(jsonOutputFile, 'utf8');
         let jsonObject = JSON.parse(jsonContent);
         let buildChecksum = '';
@@ -109,18 +105,16 @@ function buildContract(contract) {
 
     } catch (error) {
         // Any file not found, will continue build
+        console.log(' Missing File ...' + JSON.stringify(error) + ' .. Continue building ..');
     }
 
     let contractContent = fs.readFileSync(contractFile, 'utf8');
-    console.log('Contract File: ' + contract);
-
-    solcInput.sources[contract] = {
+    solcInput.solidity.sources[contract] = {
         "content": contractContent
     };
-    
-    let solcInputString = JSON.stringify(solcInput);
+
+    let solcInputString = JSON.stringify(solcInput.solidity);
     let output = solc.compile(solcInputString, { import: findImports });
-debugger;
     let jsonOutput = JSON.parse(output);
     let isError = false;
 
@@ -131,13 +125,13 @@ debugger;
                 isError = true;
             }
         });
-    } 
+    }
 
     if (isError) {
         // Compilation errors
         console.log('Compile error!');
         return false;
-    }        
+    }
 
     // Update the sol file checksum
     jsonOutput['contracts'][contract]['checksum'] = contractFileChecksum;
@@ -145,9 +139,8 @@ debugger;
     let formattedJson = JSON.stringify(jsonOutput, null, 4);
     // Write the output JSON
     fs.writeFileSync('./build/contract/' + jsonOutputName, formattedJson);
-
-    console.log('==============================');
-
+    console.dir('Solidity Contracts are compiled successfully.')
+    console.dir('Please check build/contract directory to see the output ...')
     return true;
 }
 

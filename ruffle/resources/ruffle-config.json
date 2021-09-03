@@ -1,7 +1,33 @@
 {
-    "config": {
-      "network": {
-          "url": "https://google.com"
+  "config": {
+    "network": {
+      "url": "https://google.com"
+    }
+  },
+  "solidity": {
+    "language": "Solidity",
+    "sources": {},
+    "settings": {
+      "optimizer": {
+        "enabled": true
+      },
+      "evmVersion": "byzantium",
+      "outputSelection": {
+        "*": {
+          "": [
+            "legacyAST",
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.object",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.sourceMap",
+            "evm.gasEstimates"
+          ]
+        }
       }
     }
+  }
 }
