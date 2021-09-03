@@ -1,7 +1,19 @@
 {
   "config": {
     "network": {
-      "url": "https://google.com"
+      "url": "https://dltestnet.dltlabs.com/api/2.0/",
+      "timeout": 300000,
+      "header": [
+        {
+          "name": "Authorization",
+          "value": "979f3677-d471-465f-a34f-fb35fdd36c36"
+        }
+      ],
+      "chainId": 2012018
+    },
+    "wallet": {
+      "address": "0x3ec180429a49f45adf252D22c9c5316e13b3c0b0",
+      "key": "e261f8948b52c1af1acf250a477741f284e20d018298d70ad23f54ca6f73a0d0"
     }
   },
   "solidity": {
@@ -29,5 +41,8 @@
         }
       }
     }
-  }
+  },
+  "args": [
+    "Ajay Testing"
+  ]
 }

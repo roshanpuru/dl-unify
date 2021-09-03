@@ -5,7 +5,6 @@ const path = require('path');
 const fs = require('fs');
 const solc = require('solc');
 const md5File = require('md5-file');
-console.log(process.cwd());
 const solcInput = require(process.cwd() + '/ruffle-config.json')
 // Input parameters for solc
 // Refer to https://solidity.readthedocs.io/en/develop/using-the-compiler.html#compiler-input-and-output-json-description

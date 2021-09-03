@@ -81,8 +81,9 @@ yargs
         //   console.dir('This CLI currently support dltestnet DLTLabs network');
         //   return;
         // }
-        console.dir('Deploying the contract to the <dltestnet> network. : Contract Name :' + argv.c);
+        console.dir('Deploying the contract to the <dltestnet> network. : Contract Name :' + argv.contract);
         var deploy = new Deploy(argv.contract);
+        deploy.createOutputDirectory();
         deploy.deploy();
         return;
       } else {
